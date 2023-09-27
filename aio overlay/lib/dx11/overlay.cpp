@@ -148,7 +148,6 @@ c_overlay::c_overlay() :
 	swap_chain(nullptr),
 	render_target_view(nullptr),
 	draw_list(nullptr),
-	input_handler_thread(NULL),
 	breath(NULL),
 	menu_ticks(NULL)
 {
@@ -173,6 +172,9 @@ c_overlay::c_overlay() :
 		return; // error creating device
 	
 	init_imgui();
+
+	std::thread(&c_overlay::input_handler, this).detach();
+	std::thread(&c_overlay::anim_handler, this).detach();
 }
 
 c_overlay::~c_overlay() {
@@ -249,12 +251,9 @@ BOOL c_overlay::msg_loop() {
 	return false;
 }
 
-DWORD c_overlay::input_handler() {
-	// timers for our animations
-	breath_timer.start();
-	menu_timer.start();
-
-	for (;!exit;) {
+void c_overlay::input_handler() {
+	// added a sleep per user @colbyfortnite's suggestion
+	for (; !exit; Sleep(1)) {
 		// for our imgui menu interaction
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -264,7 +263,15 @@ DWORD c_overlay::input_handler() {
 
 		io.MouseDown[0] = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
 		io.MouseDown[1] = GetAsyncKeyState(VK_RBUTTON) & 0x8000;
+	}
+}
 
+void c_overlay::anim_handler() {
+	// timers for our animations
+	breath_timer.start();
+	menu_timer.start();
+
+	for (;!exit;) {
 		RECT rect{ 0 };
 		POINT point{ 0 };
 		GetClientRect(window_handle, &rect);
@@ -294,7 +301,6 @@ DWORD c_overlay::input_handler() {
 		else if (menu_tmr < menu_anim_time)
 			menu_ticks = (show_menu ? menu_tmr : menu_anim_time - menu_tmr);
 	}
-	return 1;
 }
 
 VOID c_overlay::init_draw_list() {
@@ -354,13 +360,4 @@ VOID c_overlay::radial_gradient(const ImVec2& center, float radius, ImU32 col_in
 
 BOOL c_overlay::in_screen(const ImVec2& pos) {
 	return !(pos.x > window_width || pos.x<0 || pos.y>window_height || pos.y < 0);
-}
-
-DWORD __stdcall c_overlay::start_thread(void* Param) {
-	c_overlay* This = (c_overlay*)Param;
-	return This->input_handler();
-}
-
-BOOL c_overlay::start_input_handler() {
-	return CreateThread(NULL, 0, start_thread, (VOID*)this, 0, &input_handler_thread) != INVALID_HANDLE_VALUE;
 }

@@ -13,7 +13,6 @@ private:
 	IDXGISwapChain*						swap_chain;
 	ID3D11RenderTargetView*				render_target_view;
 	ImDrawList*							draw_list;
-	DWORD								input_handler_thread;
 	c_timer								breath_timer, menu_timer;
 
 	struct s_font {
@@ -34,14 +33,13 @@ private:
 	VOID dest_render_target();
 	const VOID render(FLOAT width, FLOAT height);
 
-	DWORD input_handler();
-	static DWORD WINAPI start_thread(VOID* Param);
+	void input_handler();
+	void anim_handler();
 public:
 	c_overlay();
 	~c_overlay();
 
 	BOOL msg_loop();
-	BOOL start_input_handler();
 	
 	VOID init_draw_list();
 	VOID crosshair(const FLOAT aSize, ImU32 color);

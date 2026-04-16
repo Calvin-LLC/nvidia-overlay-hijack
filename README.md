@@ -13,3 +13,5 @@ features:
 - insert to open the menu
 - passes through user input to the window below the overlay
 - detected on most anti-cheats (BE, EAC, VGK) due to window flags being changed on the nvidia window: https://github.com/Calvin-LLC/nvidia-overlay-hijack/blob/18775c0fcc6df97f0004cd1d0b42fcd53251a993/aio%20overlay/lib/dx11/overlay.cpp#L158
+
+- detectable by https://github.com/noahware/winbo poc
